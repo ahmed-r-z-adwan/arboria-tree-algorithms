@@ -61,27 +61,44 @@ public class TheGreatNetwork {
     // =========================
     // Mission 1: Level Order (print by levels)
     // =========================
-    static void mission1_levelOrderPrintByLevels(Node root) {
-        if (root == null) return;
+    /**
+     * Groups the tree's values by depth.
+     *
+     * Kept separate from the printing so the traversal itself can be asserted on, instead
+     * of a test having to capture stdout and parse it back.
+     */
+    static List<List<Integer>> levelOrderByLevels(Node root) {
+        List<List<Integer>> levels = new ArrayList<>();
+        if (root == null) return levels;
 
         Queue<Node> q = new LinkedList<>();
         q.add(root);
 
-        int level = 0;
         while (!q.isEmpty()) {
             int size = q.size();
-            System.out.print("Level " + level + ": ");
+            List<Integer> level = new ArrayList<>(size);
 
             for (int i = 0; i < size; i++) {
                 Node cur = q.poll();
-                System.out.print(cur.value + " ");
+                level.add(cur.value);
 
                 if (cur.left != null) q.add(cur.left);
                 if (cur.right != null) q.add(cur.right);
             }
 
+            levels.add(level);
+        }
+
+        return levels;
+    }
+
+    static void mission1_levelOrderPrintByLevels(Node root) {
+        List<List<Integer>> levels = levelOrderByLevels(root);
+
+        for (int level = 0; level < levels.size(); level++) {
+            System.out.print("Level " + level + ": ");
+            for (int value : levels.get(level)) System.out.print(value + " ");
             System.out.println();
-            level++;
         }
     }
 
@@ -212,7 +229,14 @@ public class TheGreatNetwork {
         sb.append(root.value).append(' ');
     }
 
-    static void mission5_postorderFromPreIn(int[] preorder, int[] inorder) {
+    /**
+     * Rebuilds the tree from its preorder and inorder traversals and returns the postorder
+     * as a space-separated string. Returns an empty string for empty input.
+     *
+     * The inorder index map is what keeps this linear: without it, locating each root
+     * inside the inorder range would turn the reconstruction quadratic.
+     */
+    static String postorderFromPreIn(int[] preorder, int[] inorder) {
         Map<Integer, Integer> inIndex = new HashMap<>();
         for (int i = 0; i < inorder.length; i++) {
             inIndex.put(inorder[i], i);
@@ -227,10 +251,14 @@ public class TheGreatNetwork {
         StringBuilder sb = new StringBuilder();
         postorderCollect(root, sb);
 
-        // Remove last space (optional neat output)
+        // Drop the trailing space left by postorderCollect.
         if (sb.length() > 0) sb.setLength(sb.length() - 1);
 
-        System.out.println(sb.toString());
+        return sb.toString();
+    }
+
+    static void mission5_postorderFromPreIn(int[] preorder, int[] inorder) {
+        System.out.println(postorderFromPreIn(preorder, inorder));
     }
 
     // =========================================================

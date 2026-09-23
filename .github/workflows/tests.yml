@@ -1,0 +1,42 @@
+name: tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      # The project targets Java 21, so it has to keep compiling and passing on a newer
+      # JDK as well — that is the point of running both rather than only the one used to
+      # write it.
+      matrix:
+        java: ['21', '25']
+
+    name: Java ${{ matrix.java }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK ${{ matrix.java }}
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: ${{ matrix.java }}
+          cache: maven
+
+      - name: Run tests
+        run: mvn -B test
+
+      - name: Upload test reports on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: surefire-reports-java-${{ matrix.java }}
+          path: target/surefire-reports/
